@@ -1,0 +1,76 @@
+services:
+  zookeeper:
+    image: quay.io/debezium/zookeeper:latest
+    ports:
+      - 2181:2181
+      - 2888:2888
+      - 3888:3888
+
+  kafka:
+    image: quay.io/debezium/kafka:latest
+    ports:
+      - 9092:9092
+    depends_on:
+      - zookeeper
+    environment:
+      - ZOOKEEPER_CONNECT=zookeeper:2181
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    depends_on:
+      - kafka
+    ports:
+      - "8080:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+
+  kafka-test-producer:
+    image: confluentinc/cp-kafka:latest    
+    depends_on:
+      kafka:
+        condition: service_started
+    environment:
+      KAFKA_BROKER_ID: ignored
+    command: >
+      bash -c "
+      echo 'Waiting for Kafka...' &&
+      sleep 5 &&
+      kafka-topics --create --bootstrap-server kafka:9092 --topic test-topic --partitions 1 --replication-factor 1 --if-not-exists &&
+      echo 'Publishing test messages...' &&
+      echo -e 'msg1\nmsg2\nmsg3\ntest message 4' | kafka-console-producer --bootstrap-server kafka:9092 --topic test-topic &&
+      echo 'Done!' &&
+      sleep infinity
+      "
+    profiles:
+      - test
+  cdc:
+    build:
+      context: ./cdc
+      dockerfile: Dockerfile
+    container_name: cdc
+    depends_on:
+      - oracle
+      - kafka
+    environment:
+      DATABASE_HOST: oracle
+      DATABASE_PORT: 1521
+      DATABASE_SERVICE_NAME: FREE
+      KAFKA_HOST: kafka
+      KAFKA_PORT: 9092
+  oracle:
+    image: gvenzl/oracle-free:slim-faststart
+    environment:    
+      ORACLE_PASSWORD: Password123
+    ports:
+      - "1521:1521"
+    volumes:
+      - oracle_data:/opt/oracle/oradata      
+      - ./oracle/oracle-init.sql:/docker-entrypoint-initdb.d/01-init.sql
+
+
+volumes:
+  kafka_data:
+  oracle_data:
