@@ -7,3 +7,4 @@ docker-compose.override.yml
 volumes/
 oracle_data/
 kafka_data/
+*.code-workspace

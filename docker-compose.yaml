@@ -69,7 +69,18 @@ services:
     volumes:
       - oracle_data:/opt/oracle/oradata      
       - ./oracle/oracle-init.sql:/docker-entrypoint-initdb.d/01-init.sql
-
+  data-generator:
+    build:
+      context: ./data-generator
+      dockerfile: Dockerfile
+    container_name: data-generator
+    depends_on:
+      - oracle
+    environment:
+      DATABASE_HOST: oracle
+      DATABASE_PORT: 1521
+      DATABASE_SERVICE_NAME: FREE
+      INSERT_INTERVAL: 10      
 
 volumes:
   kafka_data:
