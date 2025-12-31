@@ -22,16 +22,7 @@ Wait 30-60s for Oracle to initialize.
 
 ## View Messages
 
-```bash
-# Via Kafka UI
-open http://localhost:8080
-
-# Via CLI
-docker exec kafka kafka-console-consumer \
-  --bootstrap-server localhost:9092 \
-  --topic kafka.cdc.data_extraction_history \
-  --from-beginning
-```
+http://localhost:8080
 
 ## Insert Test Data
 
