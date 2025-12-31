@@ -1,6 +1,6 @@
 # Oracle Snapshot Log CDC with Kafka
 
-CDC using Oracle snapshot logs and Kafka. Lightweight alternative to LogMiner for small table volumes.
+CDC using Oracle snapshot logs and Kafka.
 
 ## Quick Start
 
